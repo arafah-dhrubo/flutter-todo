@@ -16,8 +16,13 @@ def todos():
             description = data['description'],
             )
         db.session.add(todo)
-        db.session.commit()
-        return jsonify(todo.serialize(), 201)
+        try:
+            db.session.commit()
+            return jsonify(todo.serialize()), 201
+        except:
+            db.session.rollback()
+            return jsonify({'error': 'Failed to add Todo'}), 500
+
     return jsonify([todo.serialize() for todo in data])
 
 

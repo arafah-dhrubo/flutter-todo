@@ -45,7 +45,7 @@ class TodoService{
   // Add Todos
   static Future<bool> addTodo(body) async {
     final uri = Uri.parse('http://10.0.2.2:5000/');
-    final response = await http.put(
+    final response = await http.post(
       uri,
       body: jsonEncode(body),
       headers: {

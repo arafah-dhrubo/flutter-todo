@@ -20,6 +20,8 @@ class _AddTodoState extends State<AddTodo> {
     final todo=widget.todo;
     if(todo != null){
       isEdit = true;
+
+
       titleController.text = todo['title'];
       descriptionController.text = todo['description'];
     }
@@ -31,8 +33,7 @@ class _AddTodoState extends State<AddTodo> {
         title: Text(isEdit ? 'Edit Todo' : 'Add Todo'),
         centerTitle: true,
       ),
-      body: Card(
-        child: ListView(
+      body: ListView(
         padding: const EdgeInsets.all(20.0),
         children: [
           TextField(
@@ -78,7 +79,7 @@ class _AddTodoState extends State<AddTodo> {
           ),
           const SizedBox(height: 20.0),
           ElevatedButton(
-              onPressed: isEdit ?updateTodo:submitTodo,
+              onPressed: isEdit?updateTodo:submitTodo,
               style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.all(20.0),
                 foregroundColor: Colors.blue[50],
@@ -87,7 +88,6 @@ class _AddTodoState extends State<AddTodo> {
               child: Text(isEdit ? 'Update' : 'Submit')
           )
         ],
-      ),
       ),
     );
   }

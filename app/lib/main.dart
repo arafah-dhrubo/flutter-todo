@@ -1,31 +1,36 @@
 import 'package:app/screens/todos_page.dart';
 import 'package:app/screens/home_page.dart';
 import 'package:app/screens/settings_page.dart';
+import 'package:app/widget/exit.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 void main() {
   bool isSwitched = false;
-  runApp(
-      MaterialApp(
-        theme: isSwitched ? ThemeData.dark() : ThemeData.light(),
-      debugShowCheckedModeBanner: false,
-      home: TodoApp())
-  );
+  runApp(const MyApp());
 }
 
-class TodoApp extends StatefulWidget {
-  const TodoApp({Key? key}) : super(key: key);
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
-  State<TodoApp> createState() => _TodoAppState();
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+        title: 'My App',
+        debugShowCheckedModeBanner: false,
+        home: MainScreen(),
+      );
+  }
 }
 
-class _TodoAppState extends State<TodoApp> {
-  int _currentIndex = 0;
+class MainScreen extends StatefulWidget {
+  const MainScreen({Key? key}) : super(key: key);
 
-  late String _appBarTitle;
-  List<Widget> _appBarActions = [];
-  late Color _appBarColor;
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _pages = [
     const HomePage(),
@@ -35,30 +40,73 @@ class _TodoAppState extends State<TodoApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.check),
-            label: 'Todos',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-      ),
-    );
+    Future<bool> showExitPopup() async {
+      if(Navigator.of(context).userGestureInProgress){
+        return false; // If there is a gesture in progress, do not show the dialog
+      }else{
+        if (Navigator.of(context).canPop()) {
+          // If we can navigate back, do so
+          Navigator.of(context).pop();
+          return false;
+        } else {
+          // If we cannot navigate back, show the confirmation dialog
+          return await showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Exit App'),
+              content: Text('Do you want to exit the app?'),
+              actions: [
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text('No'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text('Yes'),
+                ),
+              ],
+            ),
+          ) ?? false;
+        }
+      }
+    }
+    return WillPopScope(
+        onWillPop: showExitPopup,
+        child: CupertinoTabScaffold(
+        tabBar: CupertinoTabBar(
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.fork_right),
+              label: 'Tasks',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.settings),
+              label: 'Settings',
+            ),
+          ],
+        ),
+        tabBuilder: (context, index){
+          switch (index) {
+            case 0:
+              return CupertinoTabView(
+                builder: (context) =>const CupertinoPageScaffold(child: HomePage()),
+              );
+            case 1:
+              return CupertinoTabView(
+                builder: (context) =>const CupertinoPageScaffold(child: TodosPage()),
+              );
+            case 2:
+              return CupertinoTabView(
+                builder: (context) =>const CupertinoPageScaffold(child: SettingsPage()),
+              );
+          };
+          throw Exception('No widget was returned from the build method.');
+        }
+    ));
   }
 }
+ 

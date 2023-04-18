@@ -4,6 +4,7 @@ import 'package:app/widget/todo_card.dart';
 import 'package:flutter/material.dart';
 import '../services/todo_services.dart';
 import '../utils/snackbar_helper.dart';
+import '../widget/exit.dart';
 import 'add_page.dart';
 
 class TodosPage extends StatefulWidget {
@@ -52,42 +53,60 @@ class _TodosPageState extends State<TodosPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Center(
-            child: Text('Todo App'),
-          ),
-          centerTitle: true,
-        ),
-        body: FutureBuilder<List<dynamic>>(
-          future: items,
-          builder: (context, items) {
-            if (items.hasData) {
-              return RefreshIndicator(
-                onRefresh: _refreshTodos,
-                child: TodoCard(
-                  deleteById: deleteById,
-                  navigateToEditPage: navigateToEditPage,
-                  items: items.data!,
-                )
+    return WillPopScope(
+        onWillPop: () async {
+          // Show confirmation dialog
+          bool confirm = await showDialog(
+            context: context,
+            builder: (context) => const ExitConfirmationDialog(),
+          );
 
-              );
-            } else if (items.hasError) {
-              return Center(
-                child: Text('${items.error}'),
-              );
-            }
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          },
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: navigateToAddPage,
-          backgroundColor: Colors.blue,
-          child: const Icon(Icons.add),
-        ));
+          // Return true if the user confirmed, false otherwise
+          return confirm ?? false;
+        },
+        child: Scaffold(
+            appBar: AppBar(
+              automaticallyImplyLeading: false,
+              title: const Center(
+                child: Text('Tasks'),
+              ),
+              centerTitle: true,
+            ),
+            body: FutureBuilder<List<dynamic>>(
+              future: items,
+              builder: (context, items) {
+                if (items.hasData) {
+                  return RefreshIndicator(
+                      onRefresh: _refreshTodos,
+                      child: TodoCard(
+                        deleteById: deleteById,
+                        navigateToEditPage: navigateToEditPage,
+                        items: items.data!,
+                      ));
+                } else if (items.hasError) {
+                  return Center(
+                    child: Text('${items.error}'),
+                  );
+                }
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              },
+            ),
+            floatingActionButton: Container(
+              margin: const EdgeInsets.only(bottom:60),
+              height: 60,
+              width: 60,
+              child: FittedBox(
+                child: FloatingActionButton(
+                  onPressed: navigateToAddPage,
+                  child: const Icon(Icons.add),
+                ),
+              ),
+            )
+            // This trailing comma makes auto-formatting nicer for build methods.
+            )
+    );
   }
 
   Future<void> navigateToAddPage() async {
